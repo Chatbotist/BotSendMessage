@@ -95,7 +95,15 @@
                 
                 const data = await response.json();
                 console.log(data); // Логируем ответ
-                alert(`Сообщения отправлены: ${data.success} | Ошибки: ${data.errors}`); // Сообщаем пользователю
+
+                if (data.errors > 0) {
+                    data.errorDetails.forEach(errorDetail => {
+                        console.error(`Не удалось отправить сообщение пользователю ${errorDetail.id}: ${errorDetail.error}`);
+                    });
+                    alert(`Ошибки: ${data.errors}. Проверьте консоль для подробностей.`);
+                } else {
+                    alert(`Сообщения отправлены: ${data.success}`);
+                }
             } catch (error) {
                 console.error('Ошибка при отправке:', error);
                 alert('Ошибка при отправке сообщения.');
