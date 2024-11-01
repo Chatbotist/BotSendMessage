@@ -1,12 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware для парсинга JSON
 app.use(bodyParser.json());
+
+// Отдаем статические файлы из папки public
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Endpoint для отправки сообщений
 app.post('/send', async (req, res) => {
