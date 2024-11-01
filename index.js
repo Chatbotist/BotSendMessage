@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
-require('dotenv').config();
 const path = require('path');
 
 const app = express();
@@ -13,23 +12,43 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Endpoint для отправки сообщений
 app.post('/send', async (req, res) => {
-    const { telegram_ids, text, bot_token } = req.body;
+    const { bot_token, text, caption, photo_url } = req.body;
 
-    if (!telegram_ids || !text || !bot_token) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    // Проверяем допустимые сочетания параметров
+    if (!bot_token) {
+        return res.status(400).json({ error: 'Бот токен обязателен.' });
     }
 
     try {
-        for (const id of telegram_ids) {
+        if (text) {
+            // Отправить текст
             await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
-                chat_id: id,
+                chat_id: '@your_channel_or_chat_id', // замените на фактический ID чата
                 text: text,
             });
+        } else if (photo_url) {
+            if (caption) {
+                // Отправить фото с подписью
+                await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
+                    chat_id: '@your_channel_or_chat_id', // замените на фактический ID чата
+                    photo: photo_url,
+                    caption: caption,
+                });
+            } else {
+                // Отправить только фото
+                await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
+                    chat_id: '@your_channel_or_chat_id', // замените на фактический ID чата
+                    photo: photo_url,
+                });
+            }
+        } else {
+            return res.status(400).json({ error: 'Одно из полей text, caption или photo_url должно быть указано.' });
         }
-        res.json({ status: 'success', message: 'Messages sent!' });
+
+        res.json({ status: 'success', message: 'Сообщение отправлено!' });
     } catch (error) {
         console.error('Error sending message:', error);
-        res.status(500).json({ error: 'Failed to send messages' });
+        res.status(500).json({ error: 'Не удалось отправить сообщение.' });
     }
 });
 
