@@ -25,7 +25,8 @@
             text-align: center;
         }
 
-        input, textarea {
+        input,
+        textarea {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -55,33 +56,38 @@
             justify-content: space-around;
             margin-bottom: 20px;
         }
+
+        /* Добавлен отступ */
+        .form-label {
+            text-align: left;
+            margin: 10px 0 5px;
+        }
     </style>
 </head>
 
 <body>
     <form id="sendMessageForm">
-        <h1>Отправить сообщение в Telegram</h1>
-        <label for="botToken">Токен бота Telegram:</label><br>
+        <h1>Отправить рассылку подписчикам Telegram бота</h1>
+        <label class="form-label" for="botToken">Токен бота Telegram:</label><br>
         <input type="text" id="botToken" required><br>
         
-        <label for="telegramIds">Telegram IDs (через запятую):</label><br>
-        <input type="text" id="telegramIds" required><br>
+        <label class="form-label" for="telegramIds">Telegram IDs (через запятую):</label><br>
+        <input type="text" id="telegramIds" required pattern="[0-9,]*" title="Только цифры и символ запятой"><br>
         
         <div class="message-type">
             <label><input type="radio" name="messageType" value="text" checked> Текст</label>
             <label><input type="radio" name="messageType" value="photo"> Фото</label>
-            <label><input type="radio" name="messageType" value="textAndPhoto"> Текст + Фото</label>
         </div>
 
         <div id="textMessageFields" class="message-fields">
-            <label for="text">Текст сообщения:</label><br>
+            <label class="form-label" for="text">Текст сообщения:</label><br>
             <textarea id="text" required></textarea><br>
         </div>
 
         <div id="photoFields" class="message-fields hidden">
-            <label for="photoUrl">URL фото:</label><br>
+            <label class="form-label" for="photoUrl">URL фото:</label><br>
             <input type="text" id="photoUrl" required><br>
-            <label for="caption">Подпись к фото (необязательно):</label><br>
+            <label class="form-label" for="caption">Подпись к фото (необязательно):</label><br>
             <input type="text" id="caption"><br>
         </div>
 
@@ -105,11 +111,6 @@
                 photoFields.classList.remove('hidden');
                 document.getElementById('photoUrl').required = true;
                 document.getElementById('text').required = false;
-            } else if (selectedType === 'textAndPhoto') {
-                textMessageFields.classList.remove('hidden');
-                photoFields.classList.remove('hidden');
-                document.getElementById('text').required = true;
-                document.getElementById('photoUrl').required = true;
             }
         }
 
