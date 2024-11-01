@@ -14,55 +14,49 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.post('/send', async (req, res) => {
     const { bot_token, telegram_ids, text, caption, photo_url, message_type } = req.body;
 
-    // Проверяем обязательные параметры
+    // Проверка обязательных параметров
     if (!bot_token || !telegram_ids || !Array.isArray(telegram_ids)) {
         return res.status(400).json({ error: 'Бот токен и список telegram_ids обязательны.' });
     }
 
-    let successCount = 0;
-    let failureCount = 0;
+    let successCount = 0; // Счетчик успешно отправленных сообщений
+    let failureCount = 0; // Счетчик неудачных попыток
 
     try {
         for (const id of telegram_ids) {
             try {
                 if (message_type === 'text' && text) {
-                    // Отправить текстовое сообщение
+                    // Отправка текстового сообщения
                     await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
                         chat_id: id,
                         text: text,
                     });
                     successCount++;
                 } else if (message_type === 'photo' && photo_url) {
-                    if (caption) {
-                        // Отправить фото с подписью
-                        await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
-                            chat_id: id,
-                            photo: photo_url,
-                            caption: caption,
-                        });
-                    } else {
-                        // Отправить только фото
-                        await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
-                            chat_id: id,
-                            photo: photo_url,
-                        });
-                    }
+                    // Отправка фото с подписью, если она есть
+                    await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
+                        chat_id: id,
+                        photo: photo_url,
+                        caption: caption || undefined, // Если нет подписи, не отправляем
+                    });
                     successCount++;
                 }
             } catch (error) {
-                console.error(`Ошибка при отправке сообщения пользователю ${id}:`, error);
+                // Обработка ошибок при отправке сообщения
+                console.error(`Ошибка при отправке сообщения пользователю ${id}:`, error.message);
                 failureCount++;
             }
         }
 
-        const totalCount = telegram_ids.length;
+        const totalCount = telegram_ids.length; // Общее количество пользователей
         res.json({ 
             users: totalCount,
             success: successCount, 
             errors: failureCount,
         });
     } catch (error) {
-        console.error('Ошибка при обработке запроса:', error);
+        // Обработка ошибок при выполнении запроса
+        console.error('Ошибка при обработке запроса:', error.message);
         res.status(500).json({ error: 'Не удалось отправить сообщение.' });
     }
 });
