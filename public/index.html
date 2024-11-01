@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot API</title>
+</head>
+<body>
+    <h1>Отправить сообщение в Telegram</h1>
+    <form id="sendMessageForm">
+        <label for="telegramIds">Telegram IDs (через запятую):</label><br>
+        <input type="text" id="telegramIds" required><br><br>
+        
+        <label for="text">Текст сообщения:</label><br>
+        <textarea id="text" required></textarea><br><br>
+
+        <label for="botToken">Токен бота Telegram:</label><br>
+        <input type="text" id="botToken" required><br><br>
+
+        <button type="submit">Отправить сообщение</button>
+    </form>
+
+    <script>
+        document.getElementById('sendMessageForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const telegramIds = document.getElementById('telegramIds').value.split(',').map(id => id.trim());
+            const text = document.getElementById('text').value;
+            const botToken = document.getElementById('botToken').value;
+
+            const response = await fetch('/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ telegram_ids: telegramIds, text, bot_token: botToken }),
+            });
+
+            const result = await response.json();
