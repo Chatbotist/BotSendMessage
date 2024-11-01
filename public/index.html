@@ -11,6 +11,9 @@
         <label for="botToken">Токен бота Telegram:</label><br>
         <input type="text" id="botToken" required><br><br>
 
+        <label for="telegramIds">Telegram IDs (через запятую):</label><br>
+        <input type="text" id="telegramIds" required><br><br>
+
         <label for="text">Текст сообщения:</label><br>
         <textarea id="text"></textarea><br><br>
 
@@ -27,6 +30,7 @@
         document.getElementById('sendMessageForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const botToken = document.getElementById('botToken').value;
+            const telegramIds = document.getElementById('telegramIds').value.split(',').map(id => id.trim());
             const text = document.getElementById('text').value || null;
             const caption = document.getElementById('caption').value || null;
             const photoUrl = document.getElementById('photoUrl').value || null;
@@ -36,7 +40,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ bot_token: botToken, text, caption, photo_url: photoUrl }),
+                body: JSON.stringify({ bot_token: botToken, telegram_ids: telegramIds, text, caption, photo_url: photoUrl }),
             });
 
             const result = await response.json();
