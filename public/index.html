@@ -8,14 +8,17 @@
 <body>
     <h1>Отправить сообщение в Telegram</h1>
     <form id="sendMessageForm">
-        <label for="telegramIds">Telegram IDs (через запятую):</label><br>
-        <input type="text" id="telegramIds" required><br><br>
-        
-        <label for="text">Текст сообщения:</label><br>
-        <textarea id="text" required></textarea><br><br>
-
         <label for="botToken">Токен бота Telegram:</label><br>
         <input type="text" id="botToken" required><br><br>
+
+        <label for="text">Текст сообщения:</label><br>
+        <textarea id="text"></textarea><br><br>
+
+        <label for="caption">Подпись к фото (необязательно):</label><br>
+        <input type="text" id="caption"><br><br>
+
+        <label for="photoUrl">URL фото:</label><br>
+        <input type="text" id="photoUrl"><br><br>
 
         <button type="submit">Отправить сообщение</button>
     </form>
@@ -23,16 +26,17 @@
     <script>
         document.getElementById('sendMessageForm').addEventListener('submit', async (event) => {
             event.preventDefault();
-            const telegramIds = document.getElementById('telegramIds').value.split(',').map(id => id.trim());
-            const text = document.getElementById('text').value;
             const botToken = document.getElementById('botToken').value;
+            const text = document.getElementById('text').value || null;
+            const caption = document.getElementById('caption').value || null;
+            const photoUrl = document.getElementById('photoUrl').value || null;
 
             const response = await fetch('/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ telegram_ids: telegramIds, text, bot_token: botToken }),
+                body: JSON.stringify({ bot_token: botToken, text, caption, photo_url: photoUrl }),
             });
 
             const result = await response.json();
@@ -41,4 +45,3 @@
     </script>
 </body>
 </html>
-
