@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Endpoint для отправки сообщений
 app.post('/send', async (req, res) => {
-    const { bot_token, telegram_ids, text, caption, photo_url } = req.body;
+    const { bot_token, telegram_ids, text, caption, photo_url, message_type } = req.body;
 
     // Проверяем обязательные параметры
     if (!bot_token || !telegram_ids || !Array.isArray(telegram_ids)) {
@@ -25,14 +25,14 @@ app.post('/send', async (req, res) => {
     try {
         for (const id of telegram_ids) {
             try {
-                if (text) {
+                if (message_type === 'text' && text) {
                     // Отправить текстовое сообщение
                     await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
                         chat_id: id,
                         text: text,
                     });
                     successCount++;
-                } else if (photo_url) {
+                } else if (message_type === 'photo' && photo_url) {
                     if (caption) {
                         // Отправить фото с подписью
                         await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
@@ -40,15 +40,14 @@ app.post('/send', async (req, res) => {
                             photo: photo_url,
                             caption: caption,
                         });
-                        successCount++;
                     } else {
                         // Отправить только фото
                         await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
                             chat_id: id,
                             photo: photo_url,
                         });
-                        successCount++;
                     }
+                    successCount++;
                 }
             } catch (error) {
                 console.error(`Ошибка при отправке сообщения пользователю ${id}:`, error);
@@ -58,8 +57,9 @@ app.post('/send', async (req, res) => {
 
         const totalCount = telegram_ids.length;
         res.json({ 
-            status: 'success', 
-            message: `${successCount} отправлено, ${failureCount} не отправлено, всего ${totalCount} попыток.` 
+            users: totalCount,
+            success: successCount, 
+            errors: failureCount,
         });
     } catch (error) {
         console.error('Ошибка при обработке запроса:', error);
