@@ -1,32 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Bot API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4cae4c;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message-type {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Отправить сообщение в Telegram</h1>
     <form id="sendMessageForm">
+        <h1>Отправить сообщение в Telegram</h1>
         <label for="botToken">Токен бота Telegram:</label><br>
-        <input type="text" id="botToken" required><br><br>
-
+        <input type="text" id="botToken" required><br>
+        
         <label for="telegramIds">Telegram IDs (через запятую):</label><br>
-        <input type="text" id="telegramIds" required><br><br>
+        <input type="text" id="telegramIds" required><br>
+        
+        <div class="message-type">
+            <label><input type="radio" name="messageType" value="text" checked> Текст</label>
+            <label><input type="radio" name="messageType" value="photo"> Фото</label>
+            <label><input type="radio" name="messageType" value="textAndPhoto"> Текст + Фото</label>
+        </div>
 
-        <label for="text">Текст сообщения:</label><br>
-        <textarea id="text"></textarea><br><br>
+        <div id="textMessageFields" class="message-fields">
+            <label for="text">Текст сообщения:</label><br>
+            <textarea id="text" required></textarea><br>
+        </div>
 
-        <label for="caption">Подпись к фото (необязательно):</label><br>
-        <input type="text" id="caption"><br><br>
-
-        <label for="photoUrl">URL фото:</label><br>
-        <input type="text" id="photoUrl"><br><br>
+        <div id="photoFields" class="message-fields hidden">
+            <label for="photoUrl">URL фото:</label><br>
+            <input type="text" id="photoUrl" required><br>
+            <label for="caption">Подпись к фото (необязательно):</label><br>
+            <input type="text" id="caption"><br>
+        </div>
 
         <button type="submit">Отправить сообщение</button>
     </form>
 
     <script>
+        const messageTypeRadios = document.querySelectorAll('input[name="messageType"]');
+        const textMessageFields = document.getElementById('textMessageFields');
+        const photoFields = document.getElementById('photoFields');
+
+        function toggleFields() {
+            const selectedType = document.querySelector('input[name="messageType"]:checked').value;
+
+            if (selectedType === 'text') {
+                textMessageFields.classList.remove('hidden');
+                photoFields.classList.add('hidden');
+                document.getElementById('text').required = true;
+            } else if (selectedType === 'photo') {
+                textMessageFields.classList.add('hidden');
+                photoFields.classList.remove('hidden');
+                document.getElementById('photoUrl').required = true;
+                document.getElementById('text').required = false;
+            } else if (selectedType === 'textAndPhoto') {
+                textMessageFields.classList.remove('hidden');
+                photoFields.classList.remove('hidden');
+                document.getElementById('text').required = true;
+                document.getElementById('photoUrl').required = true;
+            }
+        }
+
+        messageTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleFields);
+        });
+
         document.getElementById('sendMessageForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const botToken = document.getElementById('botToken').value;
@@ -34,18 +124,23 @@
             const text = document.getElementById('text').value || null;
             const caption = document.getElementById('caption').value || null;
             const photoUrl = document.getElementById('photoUrl').value || null;
+            const messageType = document.querySelector('input[name="messageType"]:checked').value;
 
             const response = await fetch('/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ bot_token: botToken, telegram_ids: telegramIds, text, caption, photo_url: photoUrl }),
+                body: JSON.stringify({ bot_token: botToken, telegram_ids: telegramIds, text, caption, photo_url: photoUrl, message_type: messageType }),
             });
 
             const result = await response.json();
             alert(result.message || result.error);
         });
+
+        // Initial setup: show/hide fields based on the default selected message type
+        toggleFields();
     </script>
 </body>
+
 </html>
