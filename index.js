@@ -25,21 +25,28 @@ app.post('/send', async (req, res) => {
     try {
         for (const id of telegram_ids) {
             try {
+                let response;
                 if (message_type === 'text' && text) {
                     // Отправка текстового сообщения
-                    await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
+                    response = await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
                         chat_id: id,
                         text: text,
                     });
-                    successCount++;
                 } else if (message_type === 'photo' && photo_url) {
                     // Отправка фото с подписью, если она есть
-                    await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
+                    response = await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
                         chat_id: id,
                         photo: photo_url,
-                        caption: caption || undefined, // Если нет подписи, не отправляем
+                        caption: caption || undefined,
                     });
+                }
+
+                // Проверка статуса ответа
+                if (response && response.data.ok) {
                     successCount++;
+                } else {
+                    console.error(`Ошибка при отправке сообщения пользователю ${id}: ${response.data.description || 'Неизвестная ошибка'}`);
+                    failureCount++;
                 }
             } catch (error) {
                 // Обработка ошибок при отправке сообщения
