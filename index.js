@@ -12,42 +12,44 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Endpoint для отправки сообщений
 app.post('/send', async (req, res) => {
-    const { bot_token, text, caption, photo_url } = req.body;
+    const { bot_token, telegram_ids, text, caption, photo_url } = req.body;
 
-    // Проверяем допустимые сочетания параметров
-    if (!bot_token) {
-        return res.status(400).json({ error: 'Бот токен обязателен.' });
+    // Проверяем обязательные параметры
+    if (!bot_token || !telegram_ids) {
+        return res.status(400).json({ error: 'Бот токен и список telegram_ids обязательны.' });
     }
 
     try {
-        if (text) {
-            // Отправить текст
-            await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
-                chat_id: '@your_channel_or_chat_id', // замените на фактический ID чата
-                text: text,
-            });
-        } else if (photo_url) {
-            if (caption) {
-                // Отправить фото с подписью
-                await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
-                    chat_id: '@your_channel_or_chat_id', // замените на фактический ID чата
-                    photo: photo_url,
-                    caption: caption,
+        for (const id of telegram_ids) {
+            if (text) {
+                // Отправить текстовое сообщение
+                await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
+                    chat_id: id,
+                    text: text,
                 });
+            } else if (photo_url) {
+                if (caption) {
+                    // Отправить фото с подписью
+                    await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
+                        chat_id: id,
+                        photo: photo_url,
+                        caption: caption,
+                    });
+                } else {
+                    // Отправить только фото
+                    await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
+                        chat_id: id,
+                        photo: photo_url,
+                    });
+                }
             } else {
-                // Отправить только фото
-                await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
-                    chat_id: '@your_channel_or_chat_id', // замените на фактический ID чата
-                    photo: photo_url,
-                });
+                return res.status(400).json({ error: 'Необходимо указать text, caption или photo_url.' });
             }
-        } else {
-            return res.status(400).json({ error: 'Одно из полей text, caption или photo_url должно быть указано.' });
         }
-
-        res.json({ status: 'success', message: 'Сообщение отправлено!' });
+        
+        res.json({ status: 'success', message: 'Сообщения отправлены!' });
     } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('Ошибка при отправке сообщения:', error);
         res.status(500).json({ error: 'Не удалось отправить сообщение.' });
     }
 });
