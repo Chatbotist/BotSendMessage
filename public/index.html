@@ -25,13 +25,17 @@
             text-align: center;
         }
 
+        .form-control {
+            margin: 15px 0; /* Отступ между полями ввода */
+        }
+
         input,
         textarea {
-            width: 100%;
+            width: calc(100% - 22px); /* Учитываем отступы в ширине полей ввода */
             padding: 10px;
-            margin: 10px 0;
             border: 1px solid #ddd;
             border-radius: 5px;
+            box-sizing: border-box; /* Учитываем отступы при расчете ширины */
         }
 
         button {
@@ -41,6 +45,7 @@
             padding: 10px;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 10px;
         }
 
         button:hover {
@@ -57,7 +62,6 @@
             margin-bottom: 20px;
         }
 
-        /* Добавлен отступ */
         .form-label {
             text-align: left;
             margin: 10px 0 5px;
@@ -68,11 +72,15 @@
 <body>
     <form id="sendMessageForm">
         <h1>Отправить рассылку подписчикам Telegram бота</h1>
-        <label class="form-label" for="botToken">Токен бота Telegram:</label><br>
-        <input type="text" id="botToken" required><br>
+        <div class="form-control">
+            <label class="form-label" for="botToken">Токен бота Telegram:</label><br>
+            <input type="text" id="botToken" required>
+        </div>
         
-        <label class="form-label" for="telegramIds">Telegram IDs (через запятую):</label><br>
-        <input type="text" id="telegramIds" required pattern="[0-9,]*" title="Только цифры и символ запятой"><br>
+        <div class="form-control">
+            <label class="form-label" for="telegramIds">Telegram IDs (через запятую):</label><br>
+            <input type="text" id="telegramIds" required pattern="[0-9,]*" title="Только цифры и символ запятой">
+        </div>
         
         <div class="message-type">
             <label><input type="radio" name="messageType" value="text" checked> Текст</label>
@@ -80,15 +88,21 @@
         </div>
 
         <div id="textMessageFields" class="message-fields">
-            <label class="form-label" for="text">Текст сообщения:</label><br>
-            <textarea id="text" required></textarea><br>
+            <div class="form-control">
+                <label class="form-label" for="text">Текст сообщения:</label><br>
+                <textarea id="text" required></textarea>
+            </div>
         </div>
 
         <div id="photoFields" class="message-fields hidden">
-            <label class="form-label" for="photoUrl">URL фото:</label><br>
-            <input type="text" id="photoUrl" required><br>
-            <label class="form-label" for="caption">Подпись к фото (необязательно):</label><br>
-            <input type="text" id="caption"><br>
+            <div class="form-control">
+                <label class="form-label" for="photoUrl">URL фото:</label><br>
+                <input type="url" id="photoUrl" required pattern="https?://.+" title="Введите корректный URL, начинающийся с http:// или https://">
+            </div>
+            <div class="form-control">
+                <label class="form-label" for="caption">Подпись к фото (необязательно):</label><br>
+                <input type="text" id="caption">
+            </div>
         </div>
 
         <button type="submit">Отправить сообщение</button>
@@ -102,15 +116,13 @@
         function toggleFields() {
             const selectedType = document.querySelector('input[name="messageType"]:checked').value;
 
+            // Отображаем или скрываем поля в зависимости от выбранного типа сообщения
             if (selectedType === 'text') {
                 textMessageFields.classList.remove('hidden');
                 photoFields.classList.add('hidden');
-                document.getElementById('text').required = true;
             } else if (selectedType === 'photo') {
                 textMessageFields.classList.add('hidden');
                 photoFields.classList.remove('hidden');
-                document.getElementById('photoUrl').required = true;
-                document.getElementById('text').required = false;
             }
         }
 
