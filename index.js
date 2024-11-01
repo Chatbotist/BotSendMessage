@@ -1,6 +1,5 @@
-// Endpoint для отправки сообщений
 app.post('/send', async (req, res) => {
-    console.log('Received data:', req.body); // Логирование входящих данных
+    console.log('Received data:', req.body); // Логируем входящие данные
     const { bot_token, telegram_ids, text, caption, photo_url, message_type } = req.body;
 
     // Проверка обязательных параметров
@@ -16,14 +15,13 @@ app.post('/send', async (req, res) => {
         for (const id of telegram_ids) {
             try {
                 let response;
+                console.log(`Sending message to user ${id}`); // Логируем попытку отправки сообщения
                 if (message_type === 'text' && text) {
-                    // Отправка текстового сообщения
                     response = await axios.post(`https://api.telegram.org/bot${bot_token}/sendMessage`, {
                         chat_id: id,
                         text: text,
                     });
                 } else if (message_type === 'photo' && photo_url) {
-                    // Отправка фото с подписью
                     response = await axios.post(`https://api.telegram.org/bot${bot_token}/sendPhoto`, {
                         chat_id: id,
                         photo: photo_url,
@@ -39,7 +37,7 @@ app.post('/send', async (req, res) => {
                     failureCount++;
                 }
             } catch (error) {
-                console.error(`Ошибка при отправке сообщения пользователю ${id}:`, error.message);
+                console.error(`Ошибка при отправлении сообщения пользователю ${id}:`, error.message);
                 errors.push({ id, error: error.message });
                 failureCount++;
             }
